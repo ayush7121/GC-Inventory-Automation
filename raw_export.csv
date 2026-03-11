@@ -1,0 +1,6 @@
+SKU,Inventory ID,Inventory Name,Lot Number,Expiration Date,Incoming,On Hand,Committed,Fulfillable,Exception,Sellable,Backordered,Internal Transfer,Fulfillment Center
+MELT-001,INV-1,Vanilla Bean Melt,L1,,0,150,0,150,0,150,0,0,Sydney
+MELT-002,INV-2,Ocean Glow Melt,L1,,50,200,10,190,0,190,0,0,Sydney
+WICK-100,INV-3,Lavender 3-Wick,L2,,0,50,0,50,0,50,0,0,Melbourne
+TEAL-500,INV-4,Citrus Tealight Glow,L3,,0,300,50,250,0,250,0,0,Brisbane
+SPRAY-999,INV-5,Mystery Room Spray,L4,,0,100,0,100,0,100,0,0,Sydney
