@@ -28,6 +28,11 @@ if st.button("🚀 Generate Automated Report"):
             else:
                 map_df = pd.read_csv(mapping_file)
 
+            # --- BULLETPROOFING: Strip accidental spaces from column names ---
+            monday_df.columns = monday_df.columns.str.strip()
+            map_df.columns = map_df.columns.str.strip()
+            # -----------------------------------------------------------------
+
             # 2. Merge Data
             merged_df = pd.merge(monday_df, map_df, on='SKU', how='left')
             
@@ -40,70 +45,4 @@ if st.button("🚀 Generate Automated Report"):
             else:
                 merged_df['Subcategory'] = ''
 
-            # 3. Calculate PL vs Glow (% Stock Summary)
-            # Identify 'Glow' by checking the Inventory Name; default everything else to 'PL'
-            merged_df['Brand'] = np.where(merged_df['Inventory Name'].str.contains('Glow', case=False, na=False), 'Glow ', 'PL')
-            
-            total_sku_all = merged_df['SKU'].nunique()
-            total_item_all = merged_df['On Hand'].sum()
-            
-            summary_data = []
-            for brand in ['PL', 'Glow ']:
-                brand_df = merged_df[merged_df['Brand'] == brand]
-                t_sku = brand_df['SKU'].nunique()
-                t_item = brand_df['On Hand'].sum()
-                
-                summary_data.append({
-                    'Name ': brand,
-                    'Total SKU ': t_sku,
-                    'Total Item': t_item,
-                    'Percentage SKU ': (t_sku / total_sku_all) * 100 if total_sku_all else 0,
-                    'Percentage item ': (t_item / total_item_all) * 100 if total_item_all else 0
-                })
-                
-            summary_df = pd.DataFrame(summary_data)
-            
-            # Add the final Totals row to match their manual sheet exactly
-            summary_df.loc[len(summary_df)] = {
-                'Name ': 'Total Item both PL &Glow ',
-                'Total SKU ': total_sku_all,
-                'Total Item': total_item_all,
-                'Percentage SKU ': None,
-                'Percentage item ': None
-            }
-
-            # 4. Generate the Excel File
-            output = io.BytesIO()
-            with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
-                
-                # Write the PL vs Glow Summary as the very first tab
-                summary_df.to_excel(writer, sheet_name='% Stock', index=False)
-                
-                # Write each Category to its own tab
-                categories = merged_df['Category'].unique()
-                for cat in categories:
-                    cat_df = merged_df[merged_df['Category'] == cat]
-                    
-                    # Drop our temporary 'Brand' column before saving the tab
-                    cat_df = cat_df.drop(columns=['Brand']) 
-                    
-                    # Sort by Subcategory if it's being used
-                    if 'Subcategory' in cat_df.columns:
-                        cat_df = cat_df.sort_values(by=['Subcategory', 'SKU'])
-                        
-                    # Ensure valid Excel sheet names (max 31 chars, no forbidden symbols)
-                    safe_sheet_name = str(cat)[:31].replace(':', '').replace('/', '').replace('\\', '').replace('?', '').replace('*', '').replace('[', '').replace(']', '')
-                    cat_df.to_excel(writer, sheet_name=safe_sheet_name, index=False)
-
-            output.seek(0)
-            
-            st.success("✅ Report Generated Successfully!")
-            st.download_button(
-                label="📥 Download Formatted Excel Report",
-                data=output,
-                file_name="Automated_Inventory_Report.xlsx",
-                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-            )
-            
-        except Exception as e:
-            st.error(f"An error occurred during processing: {e}")
+            # 3. Calculate PL vs Glow (% Stock
