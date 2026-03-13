@@ -45,4 +45,22 @@ if st.button("🚀 Generate Automated Report"):
             else:
                 merged_df['Subcategory'] = ''
 
-            # 3. Calculate PL vs Glow (% Stock
+            # 3. Calculate PL vs Glow (% Stock Summary)
+            # Identify 'Glow' by checking the Inventory Name; default everything else to 'PL'
+            merged_df['Brand'] = np.where(merged_df['Inventory Name'].str.contains('Glow', case=False, na=False), 'Glow ', 'PL')
+            
+            total_sku_all = merged_df['SKU'].nunique()
+            total_item_all = merged_df['On Hand'].sum()
+            
+            summary_data = []
+            for brand in ['PL', 'Glow ']:
+                brand_df = merged_df[merged_df['Brand'] == brand]
+                t_sku = brand_df['SKU'].nunique()
+                t_item = brand_df['On Hand'].sum()
+                
+                summary_data.append({
+                    'Name ': brand,
+                    'Total SKU ': t_sku,
+                    'Total Item': t_item,
+                    'Percentage SKU ': (t_sku / total_sku_all) * 100 if total_sku_all else 0,
+                    'Percentage item ':
